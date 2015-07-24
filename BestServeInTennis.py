@@ -62,4 +62,5 @@ print master_df
 
 #plotting the data
 import matplotlib.pyplot as plt
-master_df.plot(master_df['ace_score'], kind = 'bar', legend=False, title = "Ace Score of ATP Men's Singles Players in "+year)
+master_df = master_df.set_index('winner_name')
+master_df.plot(kind = 'bar', legend=False, title = "Ace Score of ATP Men's Singles Players in "+year)
