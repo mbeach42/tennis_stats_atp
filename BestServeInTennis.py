@@ -4,14 +4,14 @@ import numpy as np
 
 dirname = 'C:\\Users\\Me\\Documents\\GitHub\\tennis_stats_atp\\'
 year = '2014'
-Surf = 'Grass'
+Surf = 'Hard'
 cut_off = 0.0
 
 df = pd.read_csv(dirname+'atp_matches_'+year+'.csv')
 # drop unimportant columns
 df = df[['surface', 'winner_name', 'loser_name', 'w_ace', 'l_ace', 'w_1stIn', 'l_1stWon','l_1stIn', 'l_1stWon','w_SvGms', 'l_SvGms']]
 # select only grass courts
-df = df[df['surface'].isin([Surf])]
+#df = df[df['surface'].isin([Surf])]
 df = df.drop('surface', 1)
 # only take finite values (ignore NaN)
 df = df.dropna() 
@@ -55,12 +55,22 @@ master_df['weight']  = 1.0*(master_df['w_avgAGm']-master_df['N'])
 master_df = master_df[['winner_name', 'weight']]
 master_df.rename(columns={'weight': 'ace_score'}, inplace=True)
 master_df = master_df.groupby(['winner_name'], as_index=False).aggregate(np.sum)
-
+master_df = master_df.set_index('winner_name')
 master_df = master_df.sort('ace_score')
 #print norms.loc['Roger Federer']
 print master_df
 
+#top 20
+top20_df = master_df.tail(20)
+
 #plotting the data
+import matplotlib
 import matplotlib.pyplot as plt
-master_df = master_df.set_index('winner_name')
-master_df.plot(kind = 'bar', legend=False, title = "Ace Score of ATP Men's Singles Players in "+year)
+top20_df.plot(kind = 'bar', legend=False, title = "Ace Score of ATP Men's Singles Players in "+year)
+plt.grid(b = False)
+plt.xlabel('Player')
+plt.ylabel('Ace Score')
+
+
+
+plt.savefig('figures\\'+year+'.png')
