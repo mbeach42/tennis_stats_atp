@@ -3,9 +3,10 @@ import pandas as pd
 import numpy as np
 
 dirname = 'C:\\Users\\Me\\Documents\\GitHub\\tennis_stats_atp\\'
-year = '2014'
+year = '2006'
 Surf = 'Hard'
 cut_off = 0.0
+b = 4
 
 df = pd.read_csv(dirname+'atp_matches_'+year+'.csv')
 # drop unimportant columns
@@ -51,7 +52,9 @@ master_df = acedf.join(norms, on='name')
 master_df = master_df.dropna() 
 #remove nans
 
-master_df['weight']  = 1.0*(master_df['w_avgAGm']-master_df['N'])
+#Kinds of functions
+master_df['weight']  = np.exp(-1.0/2/b**2*(master_df['w_avgAGm']-master_df['N'])**2)
+master_df['weight']  = (master_df['w_avgAGm']-master_df['N'])
 master_df = master_df[['winner_name', 'weight']]
 master_df.rename(columns={'weight': 'ace_score'}, inplace=True)
 master_df = master_df.groupby(['winner_name'], as_index=False).aggregate(np.sum)
