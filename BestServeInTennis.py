@@ -1,13 +1,13 @@
 # Tennis Men's Singles ATP "Who has the best aces?"
-# cleaner code
+
 import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
     
 dirname = 'C:\\Users\\Me\\Documents\\GitHub\\tennis_stats_atp\\'
-year = '2007'
-Surf = 'Hard'
+year = '2015'
+Surf = 'Grass'
 
 # import data, only take important columns, and drop missing data
 def readData(year, Surf):
@@ -43,7 +43,7 @@ def normalizePlayers(df):
     gdf = df[['winner_name', 'loser_name', 'l_avgAGm']] \
         .groupby(['winner_name', 'loser_name'], as_index=False) \
         .mean()
-    norms = df2.groupby(['winner_name'], as_index=False).mean()
+    norms = gdf.groupby(['winner_name'], as_index=False).mean()
     norms.rename(columns={'winner_name': 'name', 'l_avgAGm': 'N'}, inplace=True)
     norms = norms.set_index('name')
     norms = norms.dropna() 
@@ -87,6 +87,13 @@ def plotTopN(df, N):
     plt.ylabel('Ace Score')
     plt.savefig('figures\\'+year+'_'+Surf+'.png')
 
+def avgAcesGame(aces_df):
+    scores_df = aces_df
+    scores_df['ace_score']  = aces_df['w_avgAGm'] - aces_df['N']
+    aces_mean = scores_df[['ace_score']].mean()
+    aces_std = scores_df[['ace_score']].std()
+    return aces_mean[0], aces_std[0]
+    
 # Simple scores
 df = readData(year, Surf)
 df = avgAcePerGm(df)
@@ -99,4 +106,9 @@ aces_df = acesDF(df)
 scores_df = weightedScore(aces_df)
 print scores_df.tail(4)
 
-plotTopN(scores_df, 50)
+print '\n The average number of aces per game is' 
+print avgAcesGame(aces_df)[0]
+print 'The std is' 
+print avgAcesGame(aces_df)[1] 
+ 
+plotTopN(scores_df, 20)
