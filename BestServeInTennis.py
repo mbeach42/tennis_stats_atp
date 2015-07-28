@@ -36,7 +36,9 @@ def unweightedScore(df):
     score_df = simple_df.groupby('name').mean().sort(['avgAGm'])
     print "Simple analysis of the most aces on "+Surf+" courts."
     print score_df.tail()
+    print score_df.head()    
     return score_df
+
 
 # More advanced functions
 def normalizePlayers(df):
@@ -62,7 +64,7 @@ def acesDF(df):
     
 def weightedScore(aces_df):
     scores_df = aces_df
-    scores_df['ace_score']  = aces_df['w_avgAGm'] - aces_df['N']
+    scores_df['ace_score']  = 1.0*(aces_df['w_avgAGm'] - aces_df['N'])/aces_df['N']
     scores_df_mean = scores_df[['winner_name', 'ace_score']] \
         .groupby(['winner_name']) \
         .mean()
@@ -88,11 +90,8 @@ def plotTopN(df, N):
     plt.savefig('figures\\'+year+'_'+Surf+'.png')
 
 def avgAcesGame(aces_df):
-    scores_df = aces_df
-    scores_df['ace_score']  = aces_df['w_avgAGm'] - aces_df['N']
-    aces_mean = scores_df[['ace_score']].mean()
-    aces_std = scores_df[['ace_score']].std()
-    return aces_mean[0], aces_std[0]
+    aces_mean = aces_df['ace_score'].mean()
+    return aces_mean
     
 # Simple scores
 df = readData(year, Surf)
@@ -104,11 +103,10 @@ df = readData(year, Surf)
 df = avgAcePerGm(df)
 aces_df = acesDF(df)
 scores_df = weightedScore(aces_df)
-print scores_df.tail(4)
+print scores_df.tail(6)
 
 print '\n The average number of aces per game is' 
-print avgAcesGame(aces_df)[0]
-print 'The std is' 
-print avgAcesGame(aces_df)[1] 
+print avgAcesGame(scores_df)
  
 plotTopN(scores_df, 20)
+print scores_df.head(6)
