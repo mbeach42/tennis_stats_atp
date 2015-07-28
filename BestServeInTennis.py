@@ -6,8 +6,8 @@ import matplotlib
 import matplotlib.pyplot as plt
     
 dirname = 'C:\\Users\\Me\\Documents\\GitHub\\tennis_stats_atp\\'
-year = '2015'
-Surf = 'Grass'
+year = '2014'
+Surf = 'All'
 
 # import data, only take important columns, and drop missing data
 def readData(year, Surf):
@@ -33,10 +33,7 @@ def unweightedScore(df):
     l_df.columns = ['name', 'avgAGm'] # rename columns
     simple_df = pd.concat([w_df, l_df])  
     # Simply "who has the highers (unweighted) number of aces/game
-    score_df = simple_df.groupby('name').mean().sort(['avgAGm'])
-    print "Simple analysis of the most aces on "+Surf+" courts."
-    print score_df.tail()
-    print score_df.head()    
+    score_df = simple_df.groupby('name').mean().sort(['avgAGm'], ascending=False)
     return score_df
 
 
@@ -74,12 +71,12 @@ def weightedScore(aces_df):
     scores_df = scores_df_mean
     scores_df['std'] = scores_df_std['ace_score']
     scores_df = scores_df.replace([np.inf, -np.inf], np.nan).dropna()
-    scores_df = scores_df.sort('ace_score')
+    scores_df = scores_df.sort('ace_score', ascending=False)
     scores_df.rename(columns={'winner_name': 'name'}, inplace=True)
     return scores_df
 
 def plotTopN(df, N):
-    top_df = df.tail(N)
+    top_df = df.head(N)
     top_df['ace_score'].plot(kind = 'bar', 
         yerr=top_df[['std']].values.T,
         legend=False,
@@ -94,19 +91,42 @@ def avgAcesGame(aces_df):
     return aces_mean
     
 # Simple scores
-df = readData(year, Surf)
-df = avgAcePerGm(df)
-unweightedScore(df)
+def simpleScores(df):
+    df = avgAcePerGm(df)
+    simple_df = unweightedScore(df)
+    
+    print "\nSimple analysis of the most aces on "+Surf+" courts. \n"
+    print simple_df.head(10)
+    #print simple_df.tail(3)
 
 # Weighted scores
-df = readData(year, Surf)
-df = avgAcePerGm(df)
-aces_df = acesDF(df)
-scores_df = weightedScore(aces_df)
-print scores_df.tail(6)
+def normalizedScores(df):
+    df = avgAcePerGm(df)
+    aces_df = acesDF(df)
+    scores_df = weightedScore(aces_df)
+   
+    print "\n Weighted analysis of aces  on "+Surf+" courts.\n"
+    print scores_df.head(10)
+    #print scores_df.tail(5)
+    plotTopN(scores_df, 10)
 
-print '\n The average number of aces per game is' 
-print avgAcesGame(scores_df)
+# To figures out teh best of all time, let's average over may years
+def loadMultiYear(year1, year2, Surf):
+    df = readData("%d" % (year1), Surf)
+    for i in range(year1, year2):
+        print "Year %d" % (i)
+        df2 = readData("%d" % (i), Surf)
+        df = pd.concat([df, df2])
+    simpleScores(df)
+    normalizedScores(df)
+    print '\n The average number of aces per game is' 
+    print avgAcesGame(scores_df)
+        
+# The greatest of all time?
+loadMultiYear(2003, 2015, 'All')
+# Again this is unnormalized, I should normalize by avgNumAces/Gm per year
+# THis is because courts got faster, so more aces
+
+
  
-plotTopN(scores_df, 20)
-print scores_df.head(6)
+#plotTopN(scores_df, 20)
